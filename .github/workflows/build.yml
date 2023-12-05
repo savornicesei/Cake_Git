@@ -14,39 +14,22 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-18.04, ubuntu-latest, macos-latest]
+        os: [ubuntu-18.04, ubuntu-latest, macos-latest, windows-2019, windows-2022]
     steps:
       - name: Get the sources
         uses: actions/checkout@v2
         with:
           fetch-depth: 0
 
-      - name: Install .NET Core SDK 3.1.x
+      - name: Install .NET Core SDK (global.json)
         uses: actions/setup-dotnet@v1
         with:
-          dotnet-version: '3.1.x'
+            include-prerelease: 'true'
 
-      - name: Install .NET Core SDK
-        uses: actions/setup-dotnet@v1
-
-      - if: matrix.os == 'windows-latest'
-        name: Run Cake script Windows
-        run: |
-          ./build.ps1
-
-      - if: matrix.os != 'windows-latest'
-        name: Run Cake script Posix
-        run: |
-          ./build.sh
-
-      - name: Upload Artifacts
-        uses: actions/upload-artifact@v2
+      - name: Run Cake script
+        uses: cake-build/cake-action@v1
+        env:
+          matrix-os: ${{ matrix.os }}
         with:
-          name: artifacts
-          path: artifacts
-
-      - name: Upload NuGet Package
-        uses: actions/upload-artifact@v2
-        with:
-          name: nuget
-          path: nuget
+          target: GitHubActions
+          cake-version: tool-manifest
